@@ -14,6 +14,7 @@
   +----------------------------------------------------------------------+
   | Author: Olivier Hill <ohill@php.net>                                 |
   |         Matthew Fonda                                                |
+  |         Adam Saponara <as@php.net>                                   |
   +----------------------------------------------------------------------+
   Please contact support@maxmind.com with any comments
 */
@@ -24,7 +25,7 @@
 extern zend_module_entry geoip_module_entry;
 #define phpext_geoip_ptr &geoip_module_entry
 
-#define PHP_GEOIP_VERSION "1.1.0"
+#define PHP_GEOIP_VERSION "1.2.0"
 
 #ifdef PHP_WIN32
 #define PHP_GEOIP_API __declspec(dllexport)
@@ -40,26 +41,37 @@ extern zend_module_entry geoip_module_entry;
 #include <GeoIPCity.h>
 
 PHP_MINIT_FUNCTION(geoip);
-PHP_MSHUTDOWN_FUNCTION(geoip);
-PHP_RINIT_FUNCTION(geoip);
 PHP_RSHUTDOWN_FUNCTION(geoip);
 PHP_MINFO_FUNCTION(geoip);
 
-
-PHP_FUNCTION(geoip_database_info);
-#define GEOIPDEF(php_func, c_func, db_type) \
-PHP_FUNCTION(php_func);
-#include "geoip.def"
-#undef GEOIPDEF
-PHP_FUNCTION(geoip_continent_code_by_name);
+PHP_FUNCTION(geoip_country_code_by_name);
+PHP_FUNCTION(geoip_country_code3_by_name);
+PHP_FUNCTION(geoip_country_name_by_name);
+PHP_FUNCTION(geoip_asnum_by_name);
+PHP_FUNCTION(geoip_domain_by_name);
+PHP_FUNCTION(geoip_isp_by_name);
 PHP_FUNCTION(geoip_org_by_name);
+PHP_FUNCTION(geoip_region_by_name);
 PHP_FUNCTION(geoip_record_by_name);
 PHP_FUNCTION(geoip_id_by_name);
-PHP_FUNCTION(geoip_region_by_name);
-PHP_FUNCTION(geoip_isp_by_name);
+PHP_FUNCTION(geoip_continent_code_by_name);
+#if LIBGEOIP_VERSION >= 1004005
+PHP_FUNCTION(geoip_country_code_by_name_v6);
+PHP_FUNCTION(geoip_country_code3_by_name_v6);
+PHP_FUNCTION(geoip_country_name_by_name_v6);
+PHP_FUNCTION(geoip_asnum_by_name_v6);
+PHP_FUNCTION(geoip_domain_by_name_v6);
+PHP_FUNCTION(geoip_isp_by_name_v6);
+PHP_FUNCTION(geoip_org_by_name_v6);
+PHP_FUNCTION(geoip_region_by_name_v6);
+PHP_FUNCTION(geoip_record_by_name_v6);
+PHP_FUNCTION(geoip_id_by_name_v6);
+PHP_FUNCTION(geoip_continent_code_by_name_v6);
+#endif
 PHP_FUNCTION(geoip_db_avail);
-PHP_FUNCTION(geoip_db_get_all_info);
 PHP_FUNCTION(geoip_db_filename);
+PHP_FUNCTION(geoip_db_get_all_info);
+PHP_FUNCTION(geoip_database_info);
 #if LIBGEOIP_VERSION >= 1004001
 PHP_FUNCTION(geoip_region_name_by_code);
 PHP_FUNCTION(geoip_time_zone_by_country_and_region);
@@ -67,10 +79,9 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region);
 #ifdef HAVE_CUSTOM_DIRECTORY
 PHP_FUNCTION(geoip_setup_custom_directory);
 #endif
-PHP_FUNCTION(geoip_asnum_by_name);
-PHP_FUNCTION(geoip_domain_by_name);
 #if LIBGEOIP_VERSION >= 1004008
 PHP_FUNCTION(geoip_netspeedcell_by_name);
+PHP_FUNCTION(geoip_netspeedcell_by_name_v6);
 #endif
 
 ZEND_BEGIN_MODULE_GLOBALS(geoip)
@@ -85,7 +96,6 @@ ZEND_END_MODULE_GLOBALS(geoip)
 #endif
 
 #endif /* PHP_GEOIP_H */
-
 
 /*
  * Local variables:
