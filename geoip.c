@@ -357,7 +357,7 @@ void geoip_generic_record(
 		return;
 	}
 
-	gir = GeoIP_record_by_name(gi, hostname);
+	gir = geoip_func(gi, hostname);
 	GeoIP_delete(gi);
 	if (!gir) {
 		RETURN_FALSE;
