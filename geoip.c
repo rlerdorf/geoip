@@ -107,6 +107,18 @@ zend_module_entry geoip_module_entry = {
 ZEND_GET_MODULE(geoip)
 #endif
 
+#if PHP_MAJOR_VERSION >= 7
+#define strlen_compat_t size_t
+#define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val)
+#define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str)
+#define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str)
+#else
+#define strlen_compat_t int
+#define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val, dup)
+#define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str, dup)
+#define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str, dup)
+#endif
+
 #ifdef HAVE_CUSTOM_DIRECTORY
 /* {{{ geoip_change_custom_directory() helper function */
 static void geoip_change_custom_directory(char *value) {
@@ -135,10 +147,19 @@ static void geoip_change_custom_directory(char *value) {
 static PHP_INI_MH(OnUpdateDirectory) {
 	if (stage == PHP_INI_STAGE_RUNTIME || stage == PHP_INI_STAGE_HTACCESS) {
 		GEOIP_G(set_runtime_custom_directory) = 1;
+#if PHP_MAJOR_VERSION >= 7
+		geoip_change_custom_directory(new_value->val);
+#else
 		geoip_change_custom_directory(new_value);
+#endif
 		return SUCCESS;
 	}
+#if PHP_MAJOR_VERSION >= 7
+	return OnUpdateString(entry, new_value, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+#else
 	return OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+#endif
+
 }
 /* }}} */
 #endif
@@ -264,7 +285,7 @@ void geoip_generic_string(
 	GeoIP* gi;
 	char* hostname;
 	char* retval;
-	int arglen;
+	strlen_compat_t arglen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
 		return;
@@ -279,7 +300,7 @@ void geoip_generic_string(
 	if (!retval) {
 		RETURN_FALSE;
 	}
-	RETVAL_STRING(retval, 1);
+	RETVAL_STRING_COMPAT(retval, 1);
 	if (do_free) free(retval);
 }
 /* }}} */
@@ -293,7 +314,7 @@ void geoip_generic_region(
 ) {
 	GeoIP* gi;
 	char* hostname;
-	int arglen;
+	strlen_compat_t arglen;
 	GeoIPRegion* region;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
@@ -310,8 +331,8 @@ void geoip_generic_region(
 		RETURN_FALSE;
 	}
 	array_init(return_value);
-	add_assoc_string(return_value, "country_code", region->country_code, 1);
-	add_assoc_string(return_value, "region", region->region, 1);
+	add_assoc_string_compat(return_value, "country_code", region->country_code, 1);
+	add_assoc_string_compat(return_value, "region", region->region, 1);
 	GeoIPRegion_delete(region);
 }
 /* }}} */
@@ -325,7 +346,7 @@ void geoip_generic_record(
 ) {
 	GeoIP* gi;
 	char* hostname;
-	int arglen;
+	strlen_compat_t arglen;
 	GeoIPRecord* gir;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
@@ -344,14 +365,14 @@ void geoip_generic_record(
 
 	array_init(return_value);
 #if LIBGEOIP_VERSION >= 1004003
-	add_assoc_string(return_value, "continent_code", (gir->continent_code == NULL) ? "" : gir->continent_code, 1);
+	add_assoc_string_compat(return_value, "continent_code", (gir->continent_code == NULL) ? "" : gir->continent_code, 1);
 #endif
-	add_assoc_string(return_value, "country_code", (gir->country_code == NULL) ? "" : gir->country_code, 1);
-	add_assoc_string(return_value, "country_code3", (gir->country_code3 == NULL) ? "" : gir->country_code3, 1);
-	add_assoc_string(return_value, "country_name", (gir->country_name == NULL) ? "" : gir->country_name, 1);
-	add_assoc_string(return_value, "region", (gir->region == NULL) ? "" : gir->region, 1);
-	add_assoc_string(return_value, "city", (gir->city == NULL) ? "" : gir->city, 1);
-	add_assoc_string(return_value, "postal_code", (gir->postal_code == NULL) ? "" : gir->postal_code, 1);
+	add_assoc_string_compat(return_value, "country_code", (gir->country_code == NULL) ? "" : gir->country_code, 1);
+	add_assoc_string_compat(return_value, "country_code3", (gir->country_code3 == NULL) ? "" : gir->country_code3, 1);
+	add_assoc_string_compat(return_value, "country_name", (gir->country_name == NULL) ? "" : gir->country_name, 1);
+	add_assoc_string_compat(return_value, "region", (gir->region == NULL) ? "" : gir->region, 1);
+	add_assoc_string_compat(return_value, "city", (gir->city == NULL) ? "" : gir->city, 1);
+	add_assoc_string_compat(return_value, "postal_code", (gir->postal_code == NULL) ? "" : gir->postal_code, 1);
 	add_assoc_double(return_value, "latitude", gir->latitude);
 	add_assoc_double(return_value, "longitude", gir->longitude);
 #if LIBGEOIP_VERSION >= 1004005
@@ -374,7 +395,7 @@ int geoip_generic_id(
 ) {
 	GeoIP* gi;
 	char* hostname;
-	int arglen;
+	strlen_compat_t arglen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
 		return 0;
@@ -446,7 +467,7 @@ PHP_FUNCTION(geoip_continent_code_by_name) {
 		if (id == 0) {
 			RETURN_FALSE;
 		} else {
-			RETURN_STRING((char*)GeoIP_country_continent[id], 1);
+			RETURN_STRING_COMPAT((char*)GeoIP_country_continent[id], 1);
 		}
 	}
 }
@@ -508,7 +529,7 @@ PHP_FUNCTION(geoip_continent_code_by_name_v6) {
 		if (id == 0) {
 			RETURN_FALSE;
 		} else {
-			RETURN_STRING((char*)GeoIP_country_continent[id], 1);
+			RETURN_STRING_COMPAT((char*)GeoIP_country_continent[id], 1);
 		}
 	}
 }
@@ -548,7 +569,7 @@ PHP_FUNCTION(geoip_db_filename) {
 	}
 
 	if (NULL != GeoIPDBFileName[edition])
-		RETURN_STRING(GeoIPDBFileName[edition], 1);	
+		RETURN_STRING_COMPAT(GeoIPDBFileName[edition], 1);
 }
 /* }}} */
 
@@ -563,15 +584,20 @@ PHP_FUNCTION(geoip_db_get_all_info) {
 		if (NULL != GeoIPDBDescription[i])
 		{
 			zval *row;
+#if PHP_MAJOR_VERSION >= 7
+			zval rowval;
+			row = &rowval;
+#else
 			ALLOC_INIT_ZVAL(row);
+#endif
 			array_init(row);
 
 			add_assoc_bool(row, "available", GeoIP_db_avail(i));
 			if (GeoIPDBDescription[i]) {
-				add_assoc_string(row, "description", (char *)GeoIPDBDescription[i], 1);
+				add_assoc_string_compat(row, "description", (char *)GeoIPDBDescription[i], 1);
 			}
 			if (GeoIPDBFileName[i]) {
-				add_assoc_string(row, "filename", GeoIPDBFileName[i], 1);
+				add_assoc_string_compat(row, "filename", GeoIPDBFileName[i], 1);
 			}
 
 			add_index_zval(return_value, i, row);
@@ -611,7 +637,7 @@ PHP_FUNCTION(geoip_database_info)
 	db_info = GeoIP_database_info(gi);
 	GeoIP_delete(gi);
 
-	RETVAL_STRING(db_info, 1);
+	RETVAL_STRING_COMPAT(db_info, 1);
 	free(db_info);
 }
 /* }}} */
@@ -623,7 +649,7 @@ PHP_FUNCTION(geoip_region_name_by_code) {
 	char * country_code = NULL;
 	char * region_code = NULL;
 	const char * region_name;
-	int countrylen, regionlen;
+	strlen_compat_t countrylen, regionlen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &country_code, &countrylen, &region_code, &regionlen) == FAILURE) {
 		return;
@@ -638,7 +664,7 @@ PHP_FUNCTION(geoip_region_name_by_code) {
 	if (region_name == NULL) {
 		RETURN_FALSE;
 	}
-	RETURN_STRING((char*)region_name, 1);
+	RETURN_STRING_COMPAT((char*)region_name, 1);
 }
 /* }}} */
 #endif
@@ -650,7 +676,7 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 	char * country = NULL;
 	char * region = NULL;
 	const char * timezone;
-	int countrylen, arg2len;
+	strlen_compat_t countrylen, arg2len;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &country, &countrylen, &region, &arg2len) == FAILURE) {
 		return;
@@ -665,7 +691,7 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 	if (timezone == NULL) {
 		RETURN_FALSE;
 	}
-	RETURN_STRING((char*)timezone, 1);
+	RETURN_STRING_COMPAT((char*)timezone, 1);
 }
 /* }}} */
 #endif
@@ -675,7 +701,7 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
    Sets the custom directory for GeoIP databases */
 PHP_FUNCTION(geoip_setup_custom_directory) {
 	char * dir = NULL;
-	int dirlen;
+	strlen_compat_t dirlen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &dir, &dirlen) == FAILURE) {
 		return;
