@@ -257,7 +257,7 @@ PHP_MINFO_FUNCTION(geoip) {
 /* }}} */
 
 /* {{{ geoip_open_db helper */
-GeoIP* geoip_open_db(int db_type, int db_type_fallback, int use_fallback) {
+static GeoIP* geoip_open_db(int db_type, int db_type_fallback, int use_fallback) {
 	GeoIP* gi;
 	gi = NULL;
 	if (db_type < 0 || db_type >= NUM_DB_TYPES
@@ -269,14 +269,18 @@ GeoIP* geoip_open_db(int db_type, int db_type_fallback, int use_fallback) {
 	} else if (use_fallback && GeoIP_db_avail(db_type_fallback)) {
 		gi = GeoIP_open_type(db_type_fallback, GEOIP_STANDARD);
 	} else {
-	    php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[db_type]);
+		if (GeoIPDBFileName[db_type]) {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[db_type]);
+        } else {
+			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available.");
+		}
 	}
 	return gi;
 }
 /* }}} */
 
 /* {{{ geoip_generic_string helper */
-void geoip_generic_string(
+static void geoip_generic_string(
 	INTERNAL_FUNCTION_PARAMETERS,
 	char* (*geoip_func)(GeoIP* gi, const char* host),
 	int db_type,
@@ -306,7 +310,7 @@ void geoip_generic_string(
 /* }}} */
 
 /* {{{ geoip_generic_string helper */
-void geoip_generic_region(
+static void geoip_generic_region(
 	INTERNAL_FUNCTION_PARAMETERS,
 	GeoIPRegion* (*geoip_func)(GeoIP* gi, const char* host),
 	int db_type_1,
@@ -338,7 +342,7 @@ void geoip_generic_region(
 /* }}} */
 
 /* {{{ geoip_generic_record helper */
-void geoip_generic_record(
+static void geoip_generic_record(
 	INTERNAL_FUNCTION_PARAMETERS,
 	GeoIPRecord* (*geoip_func)(GeoIP* gi, const char* host),
     int db_type1,
@@ -387,7 +391,7 @@ void geoip_generic_record(
 /* }}} */
 
 /* {{{ geoip_generic_id helper */
-int geoip_generic_id(
+static int geoip_generic_id(
 	INTERNAL_FUNCTION_PARAMETERS,
 	int (*geoip_func)(GeoIP* gi, const char* host),
 	int db_type,
@@ -447,7 +451,7 @@ PHP_FUNCTION(geoip_org_by_name) {
 }
 
 PHP_FUNCTION(geoip_region_by_name) {
-	geoip_generic_region(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_region_by_name, GEOIP_CITY_EDITION_REV1, GEOIP_CITY_EDITION_REV0);
+	geoip_generic_region(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_region_by_name, GEOIP_REGION_EDITION_REV1, GEOIP_REGION_EDITION_REV0);
 }
 
 PHP_FUNCTION(geoip_record_by_name) {
@@ -509,7 +513,7 @@ PHP_FUNCTION(geoip_org_by_name_v6) {
 }
 
 PHP_FUNCTION(geoip_region_by_name_v6) {
-	geoip_generic_region(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_region_by_name_v6, GEOIP_CITY_EDITION_REV1_V6, GEOIP_CITY_EDITION_REV0_V6);
+	geoip_generic_region(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_region_by_name_v6, GEOIP_REGION_EDITION_REV1, GEOIP_REGION_EDITION_REV0);
 }
 
 PHP_FUNCTION(geoip_record_by_name_v6) {
