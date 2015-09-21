@@ -8,7 +8,7 @@ Checking geoip_record_by_name_v6
 var_dump(geoip_record_by_name_v6('2001:4860:4860::8888'));
 
 ?>
---EXPECT--
+--EXPECTF--
 array(11) {
   ["continent_code"]=>
   string(2) "NA"
@@ -19,17 +19,17 @@ array(11) {
   ["country_name"]=>
   string(13) "United States"
   ["region"]=>
-  string(0) ""
+  string(0) "%S"
   ["city"]=>
-  string(0) ""
+  string(0) "%S"
   ["postal_code"]=>
-  string(0) ""
+  string(0) "%S"
   ["latitude"]=>
-  float(38)
+  float(%f)
   ["longitude"]=>
-  float(-97)
+  float(%f)
   ["dma_code"]=>
-  int(0)
+  int(%i)
   ["area_code"]=>
-  int(0)
+  int(%i)
 }
