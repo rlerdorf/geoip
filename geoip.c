@@ -109,11 +109,13 @@ ZEND_GET_MODULE(geoip)
 
 #if PHP_MAJOR_VERSION >= 7
 #define strlen_compat_t size_t
+#define zend_long_compat zend_long
 #define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val)
 #define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str)
 #define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str)
 #else
 #define strlen_compat_t int
+#define zend_long_compat long
 #define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val, dup)
 #define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str, dup)
 #define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str, dup)
@@ -542,7 +544,7 @@ PHP_FUNCTION(geoip_continent_code_by_name_v6) {
 
 /* {{{ proto boolean geoip_db_avail( [ int database ] ) */
 PHP_FUNCTION(geoip_db_avail) {
-	long edition;
+	zend_long_compat edition;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &edition) == FAILURE) {
 		return;
@@ -560,7 +562,7 @@ PHP_FUNCTION(geoip_db_avail) {
 
 /* {{{ proto string geoip_db_filename( [ int database ] ) */
 PHP_FUNCTION(geoip_db_filename) {
-	long edition;
+	zend_long_compat edition;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &edition) == FAILURE) {
 		return;
@@ -616,7 +618,7 @@ PHP_FUNCTION(geoip_database_info)
 {
 	GeoIP * gi;
 	char * db_info;
-	long edition = GEOIP_COUNTRY_EDITION;
+	zend_long_compat edition = GEOIP_COUNTRY_EDITION;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &edition) == FAILURE) {
 		return;
