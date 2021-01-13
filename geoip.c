@@ -157,9 +157,9 @@ static PHP_INI_MH(OnUpdateDirectory) {
 		return SUCCESS;
 	}
 #if PHP_MAJOR_VERSION >= 7
-	return OnUpdateString(entry, new_value, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	return OnUpdateString(entry, new_value, mh_arg1, mh_arg2, mh_arg3, stage);
 #else
-	return OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage TSRMLS_CC);
+	return OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage);
 #endif
 
 }
@@ -265,16 +265,16 @@ static GeoIP* geoip_open_db(int db_type, int db_type_fallback, int use_fallback)
 	if (db_type < 0 || db_type >= NUM_DB_TYPES
 		|| (use_fallback && (db_type_fallback < 0 || db_type_fallback >= NUM_DB_TYPES))
 	) {
-	    php_error_docref(NULL TSRMLS_CC, E_WARNING, "Database type given is out of bound.");
+	    php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
 	} else if (GeoIP_db_avail(db_type)) {
 	    gi = GeoIP_open_type(db_type, GEOIP_STANDARD);
 	} else if (use_fallback && GeoIP_db_avail(db_type_fallback)) {
 		gi = GeoIP_open_type(db_type_fallback, GEOIP_STANDARD);
 	} else {
 		if (GeoIPDBFileName[db_type]) {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[db_type]);
+			php_error_docref(NULL, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[db_type]);
         } else {
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available.");
+			php_error_docref(NULL, E_WARNING, "Required database not available.");
 		}
 	}
 	return gi;
@@ -293,7 +293,7 @@ static void geoip_generic_string(
 	char* retval;
 	strlen_compat_t arglen;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
 		return;
 	}
 
@@ -323,7 +323,7 @@ static void geoip_generic_region(
 	strlen_compat_t arglen;
 	GeoIPRegion* region;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
 		return;
 	}
 
@@ -355,7 +355,7 @@ static void geoip_generic_record(
 	strlen_compat_t arglen;
 	GeoIPRecord* gir;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
 		return;
 	}
 
@@ -403,7 +403,7 @@ static int geoip_generic_id(
 	char* hostname;
 	strlen_compat_t arglen;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &hostname, &arglen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
 		return 0;
 	}
 
@@ -546,13 +546,13 @@ PHP_FUNCTION(geoip_continent_code_by_name_v6) {
 PHP_FUNCTION(geoip_db_avail) {
 	zend_long_compat edition;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &edition) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &edition) == FAILURE) {
 		return;
 	}
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
 		return;
 	}
 
@@ -564,13 +564,13 @@ PHP_FUNCTION(geoip_db_avail) {
 PHP_FUNCTION(geoip_db_filename) {
 	zend_long_compat edition;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &edition) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &edition) == FAILURE) {
 		return;
 	}
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
 		return;
 	}
 
@@ -620,13 +620,13 @@ PHP_FUNCTION(geoip_database_info)
 	char * db_info;
 	zend_long_compat edition = GEOIP_COUNTRY_EDITION;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|l", &edition) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|l", &edition) == FAILURE) {
 		return;
 	}
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
 		return;
 	}
 
@@ -634,9 +634,9 @@ PHP_FUNCTION(geoip_database_info)
 		gi = GeoIP_open_type(edition, GEOIP_STANDARD);
 	} else {
 		if (NULL != GeoIPDBFileName[edition])
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[GEOIP_COUNTRY_EDITION]);
+			php_error_docref(NULL, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[GEOIP_COUNTRY_EDITION]);
 		else
-			php_error_docref(NULL TSRMLS_CC, E_WARNING, "Required database not available.");
+			php_error_docref(NULL, E_WARNING, "Required database not available.");
 		return;
 	}
 
@@ -657,12 +657,12 @@ PHP_FUNCTION(geoip_region_name_by_code) {
 	const char * region_name;
 	strlen_compat_t countrylen, regionlen;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &country_code, &countrylen, &region_code, &regionlen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss", &country_code, &countrylen, &region_code, &regionlen) == FAILURE) {
 		return;
 	}
 
 	if (!countrylen || !regionlen) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "You need to specify the country and region codes.");
+		php_error_docref(NULL, E_WARNING, "You need to specify the country and region codes.");
 		RETURN_FALSE;
 	}
 
@@ -684,12 +684,12 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 	const char * timezone;
 	strlen_compat_t countrylen, arg2len;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|s", &country, &countrylen, &region, &arg2len) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s", &country, &countrylen, &region, &arg2len) == FAILURE) {
 		return;
 	}
 
 	if (!countrylen) {
-		php_error_docref(NULL TSRMLS_CC, E_WARNING, "You need to specify at least the country code.");
+		php_error_docref(NULL, E_WARNING, "You need to specify at least the country code.");
 		RETURN_FALSE;
 	}
 
@@ -709,7 +709,7 @@ PHP_FUNCTION(geoip_setup_custom_directory) {
 	char * dir = NULL;
 	strlen_compat_t dirlen;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &dir, &dirlen) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &dir, &dirlen) == FAILURE) {
 		return;
 	}
 
