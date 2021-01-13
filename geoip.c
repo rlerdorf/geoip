@@ -32,6 +32,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "geoip_arginfo.h"
 #include "php_geoip.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(geoip)
