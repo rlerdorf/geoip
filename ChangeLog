@@ -1,3 +1,14 @@
+1.2.0 2021-01-13
+
+ * Add PHP 8 support
+ * Drop PHP 5 support
+ * Add geoip_country_code_by_addr() and geoip_country_code_by_addr_v6()
+
+1.1.1
+
+ * Add IPv6 support (geoip_country_code_by_*_v6)
+ * PHP 7 support (thanks to Adam and Dan Ackroyd)
+
 1.1.0-dev 2012-xx-xx
 
  * Add geoip_setup_custom_directory() to setup custom directories per request.
@@ -6,7 +17,7 @@
  * Add support for geoip_netspeedcell_by_name(), geoip_asnum_by_name() and geoip_domain_by_name() (bug #67121).
  * Fix memory leak with custom directories (bug #67138).
  * Support changing custom directory via ini_set() (bug #61607).
- 
+
 1.0.8	2011-10-23
 
  * Windows support
