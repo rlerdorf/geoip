@@ -16,7 +16,43 @@ function geoip_country_code_by_name(string $hostname) {}
  * @param string $hostname
  * @return string|false
  */
+function geoip_country_code_by_name_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_country_code_by_addr(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_country_code_by_addr_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_domain_by_name(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_domain_by_name_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
 function geoip_country_code3_by_name(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_country_code3_by_name_v6(string $hostname) {}
 
 /**
  * @param string $hostname
@@ -28,7 +64,19 @@ function geoip_country_name_by_name(string $hostname) {}
  * @param string $hostname
  * @return string|false
  */
+function geoip_country_name_by_name_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
 function geoip_continent_code_by_name(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_continent_code_by_name_v6(string $hostname) {}
 
 /**
  * @param string $hostname
@@ -38,9 +86,21 @@ function geoip_org_by_name(string $hostname) {}
 
 /**
  * @param string $hostname
+ * @return string|false
+ */
+function geoip_org_by_name_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
  * @return array|false
  */
 function geoip_record_by_name(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return array|false
+ */
+function geoip_record_by_name_v6(string $hostname) {}
 
 /**
  * @param string $hostname
@@ -50,15 +110,33 @@ function geoip_id_by_name(string $hostname): int {}
 
 /**
  * @param string $hostname
+ * @return int
+ */
+function geoip_id_by_name_v6(string $hostname): int {}
+
+/**
+ * @param string $hostname
  * @return array|false
  */
 function geoip_region_by_name(string $hostname) {}
 
 /**
  * @param string $hostname
+ * @return array|false
+ */
+function geoip_region_by_name_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
  * @return string|false
  */
 function geoip_isp_by_name(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_isp_by_name_v6(string $hostname) {}
 
 /**
  * @param int $database
@@ -87,7 +165,7 @@ function geoip_region_name_by_code(string $country_code, string $region_code) {}
 /**
  * @param string $country_code
  * @param string|null $region_code
- * @return string|false 
+ * @return string|false
  */
 function geoip_time_zone_by_country_and_region(string $country_code, ?string $region_code) {}
 
@@ -101,7 +179,19 @@ function geoip_asnum_by_name(string $hostname) {}
  * @param string $hostname
  * @return string|false
  */
+function geoip_asnum_by_name_v6(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
 function geoip_netspeedcell_by_name(string $hostname) {}
+
+/**
+ * @param string $hostname
+ * @return string|false
+ */
+function geoip_netspeedcell_by_name_v6(string $hostname) {}
 
 /**
  * @param string $path

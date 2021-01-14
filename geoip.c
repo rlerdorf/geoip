@@ -39,67 +39,22 @@ ZEND_DECLARE_MODULE_GLOBALS(geoip)
 
 static int le_geoip;
 
-/* {{{ */
-zend_function_entry geoip_functions[] = {
-	PHP_FE(geoip_country_code_by_name, NULL)
-	PHP_FE(geoip_country_code3_by_name, NULL)
-	PHP_FE(geoip_country_name_by_name, NULL)
-	PHP_FE(geoip_asnum_by_name, NULL)
-	PHP_FE(geoip_domain_by_name, NULL)
-	PHP_FE(geoip_isp_by_name, NULL)
-	PHP_FE(geoip_org_by_name, NULL)
-	PHP_FE(geoip_region_by_name, NULL)
-	PHP_FE(geoip_record_by_name, NULL)
-	PHP_FE(geoip_id_by_name, NULL)
-	PHP_FE(geoip_continent_code_by_name, NULL)
-#if LIBGEOIP_VERSION >= 1004005
-	PHP_FE(geoip_country_code_by_name_v6, NULL)
-	PHP_FE(geoip_country_code3_by_name_v6, NULL)
-	PHP_FE(geoip_country_name_by_name_v6, NULL)
-	PHP_FE(geoip_asnum_by_name_v6, NULL)
-	PHP_FE(geoip_domain_by_name_v6, NULL)
-	PHP_FE(geoip_isp_by_name_v6, NULL)
-	PHP_FE(geoip_org_by_name_v6, NULL)
-	PHP_FE(geoip_region_by_name_v6, NULL)
-	PHP_FE(geoip_record_by_name_v6, NULL)
-	PHP_FE(geoip_id_by_name_v6, NULL)
-	PHP_FE(geoip_continent_code_by_name_v6, NULL)
-#endif
-	PHP_FE(geoip_db_avail, NULL)
-	PHP_FE(geoip_db_filename, NULL)
-	PHP_FE(geoip_db_get_all_info, NULL)
-	PHP_FE(geoip_database_info, NULL)
-#if LIBGEOIP_VERSION >= 1004001
-	PHP_FE(geoip_region_name_by_code, NULL)
-	PHP_FE(geoip_time_zone_by_country_and_region, NULL)
-#endif
-#ifdef HAVE_CUSTOM_DIRECTORY
-	PHP_FE(geoip_setup_custom_directory, NULL)
-#endif
-#if LIBGEOIP_VERSION >= 1004008
-	PHP_FE(geoip_netspeedcell_by_name, NULL)
-	PHP_FE(geoip_netspeedcell_by_name_v6, NULL)
-#endif
-	{NULL, NULL, NULL}
-};
-/* }}} */
-
 /* {{{ geoip_module_entry
  */
 zend_module_entry geoip_module_entry = {
-#if ZEND_MODULE_API_NO >= 20010901
 	STANDARD_MODULE_HEADER,
-#endif
 	"geoip",
-	geoip_functions,
+	ext_functions,
 	PHP_MINIT(geoip),
 	NULL,
 	NULL,
+#ifdef HAVE_CUSTOM_DIRECTORY
 	PHP_RSHUTDOWN(geoip),
-	PHP_MINFO(geoip),
-#if ZEND_MODULE_API_NO >= 20010901
-	PHP_GEOIP_VERSION, /* version number of the extension */
+#else
+	NULL,
 #endif
+	PHP_MINFO(geoip),
+	PHP_GEOIP_VERSION, /* version number of the extension */
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
@@ -108,19 +63,11 @@ zend_module_entry geoip_module_entry = {
 ZEND_GET_MODULE(geoip)
 #endif
 
-#if PHP_MAJOR_VERSION >= 7
 #define strlen_compat_t size_t
 #define zend_long_compat zend_long
 #define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val)
 #define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str)
 #define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str)
-#else
-#define strlen_compat_t int
-#define zend_long_compat long
-#define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val, dup)
-#define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str, dup)
-#define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str, dup)
-#endif
 
 #ifdef HAVE_CUSTOM_DIRECTORY
 /* {{{ geoip_change_custom_directory() helper function */
@@ -145,33 +92,20 @@ static void geoip_change_custom_directory(char *value) {
 /* }}} */
 #endif
 
-#ifdef HAVE_CUSTOM_DIRECTORY
 /* {{{ PHP_INI_MH */
 static PHP_INI_MH(OnUpdateDirectory) {
 	if (stage == PHP_INI_STAGE_RUNTIME || stage == PHP_INI_STAGE_HTACCESS) {
 		GEOIP_G(set_runtime_custom_directory) = 1;
-#if PHP_MAJOR_VERSION >= 7
 		geoip_change_custom_directory(new_value->val);
-#else
-		geoip_change_custom_directory(new_value);
-#endif
 		return SUCCESS;
 	}
-#if PHP_MAJOR_VERSION >= 7
 	return OnUpdateString(entry, new_value, mh_arg1, mh_arg2, mh_arg3, stage);
-#else
-	return OnUpdateString(entry, new_value, new_value_length, mh_arg1, mh_arg2, mh_arg3, stage);
-#endif
-
 }
 /* }}} */
-#endif
 
 /* {{{ PHP_INI */
 PHP_INI_BEGIN()
-#ifdef HAVE_CUSTOM_DIRECTORY
 	STD_PHP_INI_ENTRY("geoip.custom_directory", NULL, PHP_INI_ALL, OnUpdateDirectory, custom_directory, zend_geoip_globals, geoip_globals)
-#endif
 PHP_INI_END()
 /* }}} */
 
@@ -418,9 +352,12 @@ static int geoip_generic_id(
 }
 /* }}} */
 
-/* {{{ proto string geoip_db_avail( [ int database ] ) */
 PHP_FUNCTION(geoip_country_code_by_name) {
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, (char* (*)(GeoIP*, const char*))GeoIP_country_code_by_name, GEOIP_COUNTRY_EDITION, 0);
+}
+
+PHP_FUNCTION(geoip_country_code_by_addr) {
+	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, (char* (*)(GeoIP*, const char*))GeoIP_country_code_by_addr, GEOIP_COUNTRY_EDITION, 0);
 }
 
 PHP_FUNCTION(geoip_country_code3_by_name) {
@@ -439,11 +376,13 @@ PHP_FUNCTION(geoip_domain_by_name) {
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name, GEOIP_DOMAIN_EDITION, 1);
 }
 
-#if LIBGEOIP_VERSION >= 1004008
 PHP_FUNCTION(geoip_netspeedcell_by_name) {
+#if LIBGEOIP_VERSION >= 1004008
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name, GEOIP_NETSPEED_EDITION_REV1, 1);
-}
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
 #endif
+}
 
 PHP_FUNCTION(geoip_isp_by_name) {
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name, GEOIP_ISP_EDITION, 1);
@@ -479,58 +418,108 @@ PHP_FUNCTION(geoip_continent_code_by_name) {
 	}
 }
 
-#if LIBGEOIP_VERSION >= 1004005
 /* {{{ IPV6 functions */
 PHP_FUNCTION(geoip_country_code_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, (char* (*)(GeoIP*, const char*))GeoIP_country_code_by_name_v6, GEOIP_COUNTRY_EDITION_V6, 0);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
+}
+
+PHP_FUNCTION(geoip_country_code_by_addr_v6) {
+#if LIBGEOIP_VERSION >= 1004005
+	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, (char* (*)(GeoIP*, const char*))GeoIP_country_code_by_addr_v6, GEOIP_COUNTRY_EDITION_V6, 0);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_country_code3_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, (char* (*)(GeoIP*, const char*))GeoIP_country_code3_by_name_v6, GEOIP_COUNTRY_EDITION_V6, 0);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_country_name_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, (char* (*)(GeoIP*, const char*))GeoIP_country_name_by_name_v6, GEOIP_COUNTRY_EDITION_V6, 0);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_asnum_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name_v6, GEOIP_ASNUM_EDITION_V6, 1);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_domain_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name_v6, GEOIP_DOMAIN_EDITION_V6, 1);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
-#if LIBGEOIP_VERSION >= 1004008
 PHP_FUNCTION(geoip_netspeedcell_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004008
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name_v6, GEOIP_NETSPEED_EDITION_REV1_V6, 1);
-}
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
 #endif
+}
 
 PHP_FUNCTION(geoip_isp_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_name_by_name_v6, GEOIP_ISP_EDITION_V6, 1);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_org_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_string(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_org_by_name_v6, GEOIP_ORG_EDITION_V6, 1);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_region_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_region(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_region_by_name_v6, GEOIP_REGION_EDITION_REV1, GEOIP_REGION_EDITION_REV0);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_record_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	geoip_generic_record(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_record_by_name_v6, GEOIP_CITY_EDITION_REV1_V6, GEOIP_CITY_EDITION_REV0_V6);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_id_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	int netspeed;
 	if (geoip_generic_id(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_id_by_name_v6, GEOIP_NETSPEED_EDITION_REV1_V6, &netspeed)) {
 		RETURN_LONG(netspeed);
 	}
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 
 PHP_FUNCTION(geoip_continent_code_by_name_v6) {
+#if LIBGEOIP_VERSION >= 1004005
 	int id;
 	if (geoip_generic_id(INTERNAL_FUNCTION_PARAM_PASSTHRU, GeoIP_id_by_name_v6, GEOIP_COUNTRY_EDITION_V6, &id)) {
 		if (id == 0) {
@@ -539,9 +528,11 @@ PHP_FUNCTION(geoip_continent_code_by_name_v6) {
 			RETURN_STRING_COMPAT((char*)GeoIP_country_continent[id], 1);
 		}
 	}
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 /* }}} */
-#endif
 
 /* {{{ proto boolean geoip_db_avail( [ int database ] ) */
 PHP_FUNCTION(geoip_db_avail) {
@@ -591,12 +582,8 @@ PHP_FUNCTION(geoip_db_get_all_info) {
 		if (NULL != GeoIPDBDescription[i])
 		{
 			zval *row;
-#if PHP_MAJOR_VERSION >= 7
 			zval rowval;
 			row = &rowval;
-#else
-			ALLOC_INIT_ZVAL(row);
-#endif
 			array_init(row);
 
 			add_assoc_bool(row, "available", GeoIP_db_avail(i));
@@ -649,10 +636,10 @@ PHP_FUNCTION(geoip_database_info)
 }
 /* }}} */
 
-#if LIBGEOIP_VERSION >= 1004001
 /* {{{ proto string geoip_region_name_by_code( string country_code, string region_code )
    Returns the region name for some country code and region code combo */
 PHP_FUNCTION(geoip_region_name_by_code) {
+#if LIBGEOIP_VERSION >= 1004001
 	char * country_code = NULL;
 	char * region_code = NULL;
 	const char * region_name;
@@ -672,14 +659,16 @@ PHP_FUNCTION(geoip_region_name_by_code) {
 		RETURN_FALSE;
 	}
 	RETURN_STRING_COMPAT((char*)region_name, 1);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 /* }}} */
-#endif
 
-#if LIBGEOIP_VERSION >= 1004001
 /* {{{ proto string geoip_time_zone_by_country_and_region( string country, string region )
    Returns the time zone for some country code and region code combo */
 PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
+#if LIBGEOIP_VERSION >= 1004001
 	char * country = NULL;
 	char * region = NULL;
 	const char * timezone;
@@ -699,14 +688,16 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 		RETURN_FALSE;
 	}
 	RETURN_STRING_COMPAT((char*)timezone, 1);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
+#endif
 }
 /* }}} */
-#endif
 
-#ifdef HAVE_CUSTOM_DIRECTORY
 /* {{{ proto void geoip_setup_custom_directory( string directory )
    Sets the custom directory for GeoIP databases */
 PHP_FUNCTION(geoip_setup_custom_directory) {
+#ifdef HAVE_CUSTOM_DIRECTORY
 	char * dir = NULL;
 	strlen_compat_t dirlen;
 
@@ -716,9 +707,11 @@ PHP_FUNCTION(geoip_setup_custom_directory) {
 
 	GEOIP_G(set_runtime_custom_directory) = 1;
 	geoip_change_custom_directory(dir);
+#else
+	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a version of libgeoip with custom directory support for this to work");
+#endif
 }
 /* }}} */
-#endif
 
 
 /*

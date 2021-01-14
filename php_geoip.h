@@ -40,6 +40,8 @@ extern zend_module_entry geoip_module_entry;
 #include <GeoIP.h>
 #include <GeoIPCity.h>
 
+PHP_GEOIP_API void _GeoIP_setup_dbfilename(void);
+
 PHP_MINIT_FUNCTION(geoip);
 PHP_RSHUTDOWN_FUNCTION(geoip);
 PHP_MINFO_FUNCTION(geoip);

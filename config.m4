@@ -35,7 +35,7 @@ if test "$PHP_GEOIP" != "no"; then
   # odd PHP4 fix
   if test "x$PHP_LIBDIR" = "x"; then
     PHP_LIBDIR=lib
-  fi 
+  fi
 
   # --with-geoip -> check for lib and symbol presence
   LIBNAME=GeoIP # you may want to change this
@@ -70,7 +70,7 @@ if test "$PHP_GEOIP" != "no"; then
   ],[
     -L$GEOIP_DIR/$PHP_LIBDIR -lm
   ])
-  
+
   # Checking for GeoIP_continent_by_id in newer lib
   PHP_CHECK_LIBRARY($LIBNAME,GeoIP_continent_by_id,
   [
@@ -98,7 +98,7 @@ if test "$PHP_GEOIP" != "no"; then
   ],[],[
     #include <GeoIP.h>
   ])
-  
+
   # Checking for GEOIP_ACCURACYRADIUS_EDITION
   AC_CHECK_DECL(GEOIP_ACCURACYRADIUS_EDITION,
   [
@@ -106,7 +106,7 @@ if test "$PHP_GEOIP" != "no"; then
   ],[],[
     #include <GeoIP.h>
   ])
-  
+
   # Check to see if we are using the LGPL library (version 1.4.0 and newer)
   AC_MSG_CHECKING([for LGPL compatible GeoIP libs])
   libgeoip_full_version=`find $GEOIP_DIR/$PHP_LIBDIR/ -name libGeoIP.\*.\*.\*.\* | cut -d . -f 2-5 | sort`
@@ -128,7 +128,7 @@ if test "$PHP_GEOIP" != "no"; then
   # Just in case it didn't work, try alternate method, or fail
   if test "x$LIBGEOIP_VERSION" = "x"; then
     AC_MSG_RESULT([cannot detect])
-    
+
     # Alternate method based on library capabilities (not 100% acurate)
     AC_MSG_CHECKING([library features to determine version (not acurate)])
     if test "x$MIN_GEOIP_VERSION" = "x"; then
@@ -136,7 +136,7 @@ if test "$PHP_GEOIP" != "no"; then
     else
         LIBGEOIP_VERSION=$MIN_GEOIP_VERSION
     fi
-  fi 
+  fi
 
   if test "$LIBGEOIP_VERSION" -lt "1004000"; then
     AC_MSG_RESULT([wrong version])
