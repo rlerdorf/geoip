@@ -25,7 +25,7 @@
 extern zend_module_entry geoip_module_entry;
 #define phpext_geoip_ptr &geoip_module_entry
 
-#define PHP_GEOIP_VERSION "1.2.0"
+#define PHP_GEOIP_VERSION "1.3.0"
 
 #ifdef PHP_WIN32
 #define PHP_GEOIP_API __declspec(dllexport)
