@@ -1,7 +1,4 @@
-This PHP extension allows you to find the location of an IP address - City, State, 
-Country, Longitude, Latitude, and other information as all, such as ISP and connection type.
+This is the legacy MaxMind v1 GeoIP PHP extension. This will work on PHP 7.x and PHP 8.x.
 
-To compile it, you will need to have the GeoIP c library installed.
+Unless you have old code that needs this, you are better off using [GeoIP2](https://github.com/maxmind/GeoIP2-php)
 
-For installation instructions for PHP extensions, see:
-http://www.php.net/manual/en/install.pecl.php
