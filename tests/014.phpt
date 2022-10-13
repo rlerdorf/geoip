@@ -8,16 +8,14 @@ Checking timezone info with (some) empty fields
 <?php
 
 var_dump(geoip_time_zone_by_country_and_region('US','MA'));
-var_dump(geoip_time_zone_by_country_and_region('US',NULL));
 var_dump(geoip_time_zone_by_country_and_region('DE'));
-var_dump(geoip_time_zone_by_country_and_region(NULL,''));
-var_dump(geoip_time_zone_by_country_and_region(NULL,NULL));
+var_dump(geoip_time_zone_by_country_and_region('',''));
+var_dump(geoip_time_zone_by_country_and_region('','MA'));
 
 ?>
 --EXPECTF--
-string(%d) "America/%s"
-bool(false)
-string(%d) "Europe/%s"
+string(16) "America/New_York"
+string(13) "Europe/Berlin"
 
 Warning: geoip_time_zone_by_country_and_region(): You need to specify at least the country code. in %s on line %d
 bool(false)
