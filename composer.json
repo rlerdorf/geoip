@@ -1,0 +1,19 @@
+{
+    "name": "rlerdorf/geoip",
+    "type": "php-ext",
+    "description": "Legacy GeoIP (v1) PHP extension wrapping MaxMind's libGeoIP C library",
+    "license": "PHP-3.01",
+    "require": {
+        "php": ">=7.2"
+    },
+    "php-ext": {
+        "extension-name": "geoip",
+        "configure-options": [
+            {
+                "name": "with-geoip",
+                "description": "Path to libGeoIP installation prefix (or 'yes' for auto-detection)",
+                "needs-value": true
+            }
+        ]
+    }
+}
