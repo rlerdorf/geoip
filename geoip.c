@@ -194,7 +194,7 @@ static GeoIP* geoip_open_db(int db_type, int db_type_fallback, int use_fallback)
 	if (db_type < 0 || db_type >= NUM_DB_TYPES
 		|| (use_fallback && (db_type_fallback < 0 || db_type_fallback >= NUM_DB_TYPES))
 	) {
-	    php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+	    php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return NULL;
 	}
 
@@ -543,7 +543,7 @@ PHP_FUNCTION(geoip_db_avail) {
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return;
 	}
 
@@ -561,7 +561,7 @@ PHP_FUNCTION(geoip_db_filename) {
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return;
 	}
 
@@ -613,7 +613,7 @@ PHP_FUNCTION(geoip_database_info)
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return;
 	}
 
