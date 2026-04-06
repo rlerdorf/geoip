@@ -1,4 +1,4 @@
-### This is the **_legacy (v1) GeoIP PHP extension_** for PHP 7.x and **_PHP 8.x._**
+### This is the **_legacy (v1) GeoIP PHP extension_** for PHP 7.2+ and **_PHP 8.x._**
 Unless you have old code that needs this, you might be better off using [GeoIP2](https://github.com/maxmind/GeoIP2-php).
 
 #### Installing:
