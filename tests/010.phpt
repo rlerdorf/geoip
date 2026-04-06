@@ -10,7 +10,7 @@ geoip_database_info(1000);
 
 ?>
 --EXPECTF--
-Warning: geoip_database_info(): Database type given is out of bound. in %s on line %d
+Warning: geoip_database_info(): Database type given is out of bounds. in %s on line %d
 
-Warning: geoip_database_info(): Database type given is out of bound. in %s on line %d
+Warning: geoip_database_info(): Database type given is out of bounds. in %s on line %d
 
