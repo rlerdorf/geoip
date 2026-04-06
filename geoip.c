@@ -1,6 +1,6 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
+  | PHP Version 7                                                        |
   +----------------------------------------------------------------------+
   | Copyright (c) 1997-2009 The PHP Group                                |
   +----------------------------------------------------------------------+
@@ -33,33 +33,10 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 
-#ifndef ZEND_ARG_INFO_WITH_DEFAULT_VALUE
-#define ZEND_ARG_INFO_WITH_DEFAULT_VALUE(pass_by_ref, name, default_value) \
-	ZEND_ARG_INFO(pass_by_ref, name)
-#endif
-#if PHP_VERSION_ID < 70200
-#undef ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX
-#define ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, class_name, allow_null) \
-	static const zend_internal_arg_info name[] = { \
-		{ (const char*)(zend_uintptr_t)(required_num_args), ( #class_name ), 0, return_reference, allow_null, 0 },
-#endif
-
-#ifndef ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX
-#define ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(name, return_reference, required_num_args, class_name, allow_null) \
-	ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, class_name, allow_null)
-#endif
-
-#ifndef ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE
-#define ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(pass_by_ref, name, type_hint, allow_null, default_value) \
-	ZEND_ARG_TYPE_INFO(pass_by_ref, name, type_hint, allow_null)
-#endif
-
 #include "geoip_arginfo.h"
 #include "php_geoip.h"
 
 ZEND_DECLARE_MODULE_GLOBALS(geoip)
-
-static int le_geoip;
 
 /* {{{ geoip_module_entry
  */
@@ -85,11 +62,6 @@ zend_module_entry geoip_module_entry = {
 ZEND_GET_MODULE(geoip)
 #endif
 
-#define strlen_compat_t size_t
-#define zend_long_compat zend_long
-#define add_assoc_string_compat(zval, key, val, dup) add_assoc_string(zval, key, val)
-#define RETURN_STRING_COMPAT(str, dup) RETURN_STRING(str)
-#define RETVAL_STRING_COMPAT(str, dup) RETVAL_STRING(str)
 
 #ifdef HAVE_CUSTOM_DIRECTORY
 /* {{{ geoip_change_custom_directory() helper function */
@@ -217,17 +189,22 @@ PHP_MINFO_FUNCTION(geoip) {
 
 /* {{{ geoip_open_db helper */
 static GeoIP* geoip_open_db(int db_type, int db_type_fallback, int use_fallback) {
-	GeoIP* gi;
-	gi = NULL;
+	GeoIP* gi = NULL;
+
 	if (db_type < 0 || db_type >= NUM_DB_TYPES
 		|| (use_fallback && (db_type_fallback < 0 || db_type_fallback >= NUM_DB_TYPES))
 	) {
-	    php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
-	} else if (GeoIP_db_avail(db_type)) {
+	    php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
+		return NULL;
+	}
+
+	if (GeoIP_db_avail(db_type)) {
 	    gi = GeoIP_open_type(db_type, GEOIP_STANDARD);
 	} else if (use_fallback && GeoIP_db_avail(db_type_fallback)) {
 		gi = GeoIP_open_type(db_type_fallback, GEOIP_STANDARD);
-	} else {
+	}
+
+	if (!gi) {
 		if (GeoIPDBFileName[db_type]) {
 			php_error_docref(NULL, E_WARNING, "Required database not available at %s.", GeoIPDBFileName[db_type]);
         } else {
@@ -248,7 +225,7 @@ static void geoip_generic_string(
 	GeoIP* gi;
 	char* hostname;
 	char* retval;
-	strlen_compat_t arglen;
+	size_t arglen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
 		return;
@@ -263,7 +240,7 @@ static void geoip_generic_string(
 	if (!retval) {
 		RETURN_FALSE;
 	}
-	RETVAL_STRING_COMPAT(retval, 1);
+	RETVAL_STRING(retval);
 	if (do_free) free(retval);
 }
 /* }}} */
@@ -277,7 +254,7 @@ static void geoip_generic_region(
 ) {
 	GeoIP* gi;
 	char* hostname;
-	strlen_compat_t arglen;
+	size_t arglen;
 	GeoIPRegion* region;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
@@ -294,8 +271,8 @@ static void geoip_generic_region(
 		RETURN_FALSE;
 	}
 	array_init(return_value);
-	add_assoc_string_compat(return_value, "country_code", region->country_code, 1);
-	add_assoc_string_compat(return_value, "region", region->region, 1);
+	add_assoc_string(return_value, "country_code", region->country_code);
+	add_assoc_string(return_value, "region", region->region);
 	GeoIPRegion_delete(region);
 }
 /* }}} */
@@ -309,7 +286,7 @@ static void geoip_generic_record(
 ) {
 	GeoIP* gi;
 	char* hostname;
-	strlen_compat_t arglen;
+	size_t arglen;
 	GeoIPRecord* gir;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
@@ -328,14 +305,14 @@ static void geoip_generic_record(
 
 	array_init(return_value);
 #if LIBGEOIP_VERSION >= 1004003
-	add_assoc_string_compat(return_value, "continent_code", (gir->continent_code == NULL) ? "" : gir->continent_code, 1);
+	add_assoc_string(return_value, "continent_code", (gir->continent_code == NULL) ? "" : gir->continent_code);
 #endif
-	add_assoc_string_compat(return_value, "country_code", (gir->country_code == NULL) ? "" : gir->country_code, 1);
-	add_assoc_string_compat(return_value, "country_code3", (gir->country_code3 == NULL) ? "" : gir->country_code3, 1);
-	add_assoc_string_compat(return_value, "country_name", (gir->country_name == NULL) ? "" : gir->country_name, 1);
-	add_assoc_string_compat(return_value, "region", (gir->region == NULL) ? "" : gir->region, 1);
-	add_assoc_string_compat(return_value, "city", (gir->city == NULL) ? "" : gir->city, 1);
-	add_assoc_string_compat(return_value, "postal_code", (gir->postal_code == NULL) ? "" : gir->postal_code, 1);
+	add_assoc_string(return_value, "country_code", (gir->country_code == NULL) ? "" : gir->country_code);
+	add_assoc_string(return_value, "country_code3", (gir->country_code3 == NULL) ? "" : gir->country_code3);
+	add_assoc_string(return_value, "country_name", (gir->country_name == NULL) ? "" : gir->country_name);
+	add_assoc_string(return_value, "region", (gir->region == NULL) ? "" : gir->region);
+	add_assoc_string(return_value, "city", (gir->city == NULL) ? "" : gir->city);
+	add_assoc_string(return_value, "postal_code", (gir->postal_code == NULL) ? "" : gir->postal_code);
 	add_assoc_double(return_value, "latitude", gir->latitude);
 	add_assoc_double(return_value, "longitude", gir->longitude);
 #if LIBGEOIP_VERSION >= 1004005
@@ -358,7 +335,7 @@ static int geoip_generic_id(
 ) {
 	GeoIP* gi;
 	char* hostname;
-	strlen_compat_t arglen;
+	size_t arglen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &hostname, &arglen) == FAILURE) {
 		return 0;
@@ -435,7 +412,7 @@ PHP_FUNCTION(geoip_continent_code_by_name) {
 		if (id == 0) {
 			RETURN_FALSE;
 		} else {
-			RETURN_STRING_COMPAT((char*)GeoIP_country_continent[id], 1);
+			RETURN_STRING((char*)GeoIP_country_continent[id]);
 		}
 	}
 }
@@ -547,7 +524,7 @@ PHP_FUNCTION(geoip_continent_code_by_name_v6) {
 		if (id == 0) {
 			RETURN_FALSE;
 		} else {
-			RETURN_STRING_COMPAT((char*)GeoIP_country_continent[id], 1);
+			RETURN_STRING((char*)GeoIP_country_continent[id]);
 		}
 	}
 #else
@@ -558,7 +535,7 @@ PHP_FUNCTION(geoip_continent_code_by_name_v6) {
 
 /* {{{ proto boolean geoip_db_avail( [ int database ] ) */
 PHP_FUNCTION(geoip_db_avail) {
-	zend_long_compat edition;
+	zend_long edition;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &edition) == FAILURE) {
 		return;
@@ -566,7 +543,7 @@ PHP_FUNCTION(geoip_db_avail) {
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return;
 	}
 
@@ -576,7 +553,7 @@ PHP_FUNCTION(geoip_db_avail) {
 
 /* {{{ proto string geoip_db_filename( [ int database ] ) */
 PHP_FUNCTION(geoip_db_filename) {
-	zend_long_compat edition;
+	zend_long edition;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &edition) == FAILURE) {
 		return;
@@ -584,12 +561,12 @@ PHP_FUNCTION(geoip_db_filename) {
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return;
 	}
 
 	if (NULL != GeoIPDBFileName[edition])
-		RETURN_STRING_COMPAT(GeoIPDBFileName[edition], 1);
+		RETURN_STRING(GeoIPDBFileName[edition]);
 }
 /* }}} */
 
@@ -610,10 +587,10 @@ PHP_FUNCTION(geoip_db_get_all_info) {
 
 			add_assoc_bool(row, "available", GeoIP_db_avail(i));
 			if (GeoIPDBDescription[i]) {
-				add_assoc_string_compat(row, "description", (char *)GeoIPDBDescription[i], 1);
+				add_assoc_string(row, "description", (char *)GeoIPDBDescription[i]);
 			}
 			if (GeoIPDBFileName[i]) {
-				add_assoc_string_compat(row, "filename", GeoIPDBFileName[i], 1);
+				add_assoc_string(row, "filename", GeoIPDBFileName[i]);
 			}
 
 			add_index_zval(return_value, i, row);
@@ -628,7 +605,7 @@ PHP_FUNCTION(geoip_database_info)
 {
 	GeoIP * gi;
 	char * db_info;
-	zend_long_compat edition = GEOIP_COUNTRY_EDITION;
+	zend_long edition = GEOIP_COUNTRY_EDITION;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "|l", &edition) == FAILURE) {
 		return;
@@ -636,7 +613,7 @@ PHP_FUNCTION(geoip_database_info)
 
 	if (edition < 0 || edition >= NUM_DB_TYPES)
 	{
-		php_error_docref(NULL, E_WARNING, "Database type given is out of bound.");
+		php_error_docref(NULL, E_WARNING, "Database type given is out of bounds.");
 		return;
 	}
 
@@ -653,7 +630,7 @@ PHP_FUNCTION(geoip_database_info)
 	db_info = GeoIP_database_info(gi);
 	GeoIP_delete(gi);
 
-	RETVAL_STRING_COMPAT(db_info, 1);
+	RETVAL_STRING(db_info);
 	free(db_info);
 }
 /* }}} */
@@ -665,7 +642,7 @@ PHP_FUNCTION(geoip_region_name_by_code) {
 	char * country_code = NULL;
 	char * region_code = NULL;
 	const char * region_name;
-	strlen_compat_t countrylen, regionlen;
+	size_t countrylen, regionlen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "ss", &country_code, &countrylen, &region_code, &regionlen) == FAILURE) {
 		return;
@@ -680,7 +657,7 @@ PHP_FUNCTION(geoip_region_name_by_code) {
 	if (region_name == NULL) {
 		RETURN_FALSE;
 	}
-	RETURN_STRING_COMPAT((char*)region_name, 1);
+	RETURN_STRING((char*)region_name);
 #else
 	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
 #endif
@@ -694,7 +671,7 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 	char * country = NULL;
 	char * region = NULL;
 	const char * timezone;
-	strlen_compat_t countrylen, arg2len;
+	size_t countrylen, arg2len = 0;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s", &country, &countrylen, &region, &arg2len) == FAILURE) {
 		return;
@@ -709,7 +686,7 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 	if (timezone == NULL) {
 		RETURN_FALSE;
 	}
-	RETURN_STRING_COMPAT((char*)timezone, 1);
+	RETURN_STRING((char*)timezone);
 #else
 	php_error_docref(NULL, E_WARNING, "The GeoIP extension needs to be compiled against a newer version of libgeoip for this function to work");
 #endif
@@ -721,7 +698,7 @@ PHP_FUNCTION(geoip_time_zone_by_country_and_region) {
 PHP_FUNCTION(geoip_setup_custom_directory) {
 #ifdef HAVE_CUSTOM_DIRECTORY
 	char * dir = NULL;
-	strlen_compat_t dirlen;
+	size_t dirlen;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &dir, &dirlen) == FAILURE) {
 		return;
