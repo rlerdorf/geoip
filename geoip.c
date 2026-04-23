@@ -33,6 +33,12 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 
+/* for PHP 7.x */
+#ifndef ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE
+#define ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(pass_by_ref, name, type_hint, allow_null, default_value) \
+        ZEND_ARG_TYPE_INFO(pass_by_ref, name, type_hint, allow_null)
+#endif
+
 #include "geoip_arginfo.h"
 #include "php_geoip.h"
 
